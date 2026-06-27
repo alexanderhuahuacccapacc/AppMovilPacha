@@ -99,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         KpiCard(
           icon: Icons.person_outline,
           accent: AppColors.danger,
-          value: '${rooms.countByStatus(RoomStatus.ocupada)}',
+          value: '${rooms.countByStatus(RoomStatus.finalizada)}',
           label: 'Ocupadas',
         ),
         KpiCard(
@@ -127,7 +127,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _occupancyCard(RoomProvider rooms, bool loading) {
     final total = rooms.total;
-    final occupied = rooms.countByStatus(RoomStatus.ocupada);
+    final occupied = rooms.countByStatus(RoomStatus.finalizada);
     final ratio = total == 0 ? 0.0 : occupied / total;
 
     return Card(

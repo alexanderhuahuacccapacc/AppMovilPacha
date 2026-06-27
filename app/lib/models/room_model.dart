@@ -9,19 +9,24 @@ import '../core/constants/app_colors.dart';
 enum RoomStatus {
   disponible,
   pendiente,
-  ocupada,
+  //ocupada,
+  finalizada,
   mantenimiento,
   unknown;
 
+  // Backend real (ver HabitacionService.ESTADOS_VALIDOS) manda siempre
+  // minúsculas: "libre", "pendiente", "ocupada", "mantenimiento".
+  // El frontend Angular compara contra estos mismos strings
+  // (h.estado === 'libre'), así que aquí hacemos lo mismo.
   static RoomStatus fromApi(String? value) {
     switch (value) {
-      case 'DISPONIBLE':
+      case 'libre':
         return RoomStatus.disponible;
-      case 'PENDIENTE':
+      case 'pendiente':
         return RoomStatus.pendiente;
-      case 'OCUPADA':
-        return RoomStatus.ocupada;
-      case 'MANTENIMIENTO':
+      case 'ocupada':
+        return RoomStatus.finalizada;
+      case 'mantenimiento':
         return RoomStatus.mantenimiento;
       default:
         return RoomStatus.unknown;
@@ -29,19 +34,20 @@ enum RoomStatus {
   }
 
   /// Inverse of fromApi — needed when sending a status change back to
-  /// PUT /api/admin/habitaciones/{id}.
+  /// PUT /api/admin/habitaciones/{id}. Debe mandar los mismos strings en
+  /// minúscula que espera ESTADOS_VALIDOS en el backend.
   String get apiValue {
     switch (this) {
       case RoomStatus.disponible:
-        return 'DISPONIBLE';
+        return 'libre';
       case RoomStatus.pendiente:
-        return 'PENDIENTE';
-      case RoomStatus.ocupada:
-        return 'OCUPADA';
+        return 'pendiente';
+      case RoomStatus.finalizada:
+        return 'ocupada';
       case RoomStatus.mantenimiento:
-        return 'MANTENIMIENTO';
+        return 'mantenimiento';
       case RoomStatus.unknown:
-        return 'DISPONIBLE';
+        return 'libre';
     }
   }
 
@@ -51,7 +57,7 @@ enum RoomStatus {
         return 'Libre';
       case RoomStatus.pendiente:
         return 'Pendiente';
-      case RoomStatus.ocupada:
+      case RoomStatus.finalizada:
         return 'Ocupada';
       case RoomStatus.mantenimiento:
         return 'Mantenimiento';
@@ -66,7 +72,7 @@ enum RoomStatus {
         return AppColors.success;
       case RoomStatus.pendiente:
         return AppColors.warning;
-      case RoomStatus.ocupada:
+      case RoomStatus.finalizada:
         return AppColors.danger;
       case RoomStatus.mantenimiento:
         return AppColors.textMuted;
@@ -81,7 +87,7 @@ enum RoomStatus {
         return Icons.check_circle_outline;
       case RoomStatus.pendiente:
         return Icons.hourglass_empty;
-      case RoomStatus.ocupada:
+      case RoomStatus.finalizada:
         return Icons.person_outline;
       case RoomStatus.mantenimiento:
         return Icons.build_outlined;

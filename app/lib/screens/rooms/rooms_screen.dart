@@ -89,7 +89,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
     final filters = <(String, RoomStatus?)>[
       ('Todas', null),
       ('Disponibles', RoomStatus.disponible),
-      ('Ocupadas', RoomStatus.ocupada),
+      ('Ocupadas', RoomStatus.finalizada),
       ('Mantenimiento', RoomStatus.mantenimiento),
     ];
     return Container(
