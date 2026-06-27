@@ -1,0 +1,29 @@
+name: pacha_suite_mobile
+description: App móvil oficial de Hotel Pacha Suite.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  dio: ^5.5.0
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.1.1
+  flutter_secure_storage: ^9.2.2
+  google_fonts: ^6.2.1
+  path_provider: ^2.1.2
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
