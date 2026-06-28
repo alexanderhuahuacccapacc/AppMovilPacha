@@ -53,7 +53,7 @@ class _AssignedRoomScreenState extends State<AssignedRoomScreen> {
             return EmptyState(
               icon: Icons.king_bed_outlined,
               title: 'No se pudo cargar',
-              message: '${snapshot.error ?? 'Habitación no encontrada'}', actionLabel: '',
+              message: '${snapshot.error ?? 'Habitación no encontrada'}',
             );
           }
           return _content(snapshot.data!);

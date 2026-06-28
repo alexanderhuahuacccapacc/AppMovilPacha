@@ -52,6 +52,18 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
       drawer: _AppDrawer(onSelect: (i) => setState(() => _index = i)),
+      // FAB de "Crear habitación" visible solo para admin en la pestaña
+      // de Habitaciones.
+      floatingActionButton: (auth.isAdmin && _index == 1)
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.roomCreate),
+              icon: const Icon(Icons.add),
+              label: const Text('Nueva'),
+            )
+          : null,
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
@@ -143,6 +155,15 @@ class _AppDrawer extends StatelessWidget {
             _item(context, Icons.king_bed_outlined, 'Habitaciones', 1),
             _item(context, Icons.local_parking_outlined, 'Cochera', 2),
             _item(context, Icons.person_outline, 'Perfil', 3),
+            const Divider(color: Colors.white12, height: 1),
+            _routeItem(
+                context, Icons.room_service_outlined, 'Servicios',
+                AppRoutes.services),
+            _routeItem(context, Icons.contact_mail_outlined, 'Contacto',
+                AppRoutes.contact),
+            if (auth.isAdmin)
+              _routeItem(context, Icons.add_home_outlined, 'Crear habitación',
+                  AppRoutes.roomCreate),
             if (auth.isAdmin) const _AdminOnlyHint(),
             const Spacer(),
             const Divider(color: Colors.white12, height: 1),
@@ -168,6 +189,20 @@ class _AppDrawer extends StatelessWidget {
       onTap: () {
         Navigator.of(context).pop();
         onSelect(index);
+      },
+    );
+  }
+
+  /// Igual que [_item] pero navega a una ruta con nombre (pantallas que no
+  /// forman parte del IndexedStack del shell: Servicios, Contacto, etc.).
+  Widget _routeItem(
+      BuildContext context, IconData icon, String label, String route) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white70),
+      title: Text(label, style: const TextStyle(color: Colors.white70)),
+      onTap: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(route);
       },
     );
   }

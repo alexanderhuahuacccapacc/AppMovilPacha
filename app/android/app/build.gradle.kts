@@ -23,7 +23,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pacha_suite_mobile"
-        minSdk = flutter.minSdkVersion
+        // flutter_secure_storage requiere 23; webview_flutter/url_launcher OK.
+        minSdk = maxOf(23, flutter.minSdkVersion)
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
