@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../core/constants/app_colors.dart';
 
-/// Friendly placeholder for empty or error states.
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -27,28 +25,24 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 56, color: AppColors.border),
+            Icon(icon, size: 64, color: AppColors.textMuted),
             const SizedBox(height: 16),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               message,
+              style: TextStyle(color: AppColors.textMuted),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted),
             ),
-            if (actionLabel != null && onAction != null) ...[
+            if (onAction != null && actionLabel != null && actionLabel!.isNotEmpty) ...[
               const SizedBox(height: 20),
-              OutlinedButton.icon(
+              ElevatedButton(
                 onPressed: onAction,
-                icon: const Icon(Icons.refresh, size: 18),
-                label: Text(actionLabel!),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                child: Text(actionLabel!),
               ),
             ],
           ],

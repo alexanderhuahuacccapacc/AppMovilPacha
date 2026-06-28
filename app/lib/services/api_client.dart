@@ -58,4 +58,39 @@ class ApiClient {
   Future<void> clearCookies() async {
     await _cookieJar.deleteAll();
   }
+
+  // ---------------------------------------------------------------------
+  // Métodos HTTP genéricos usados por los repositories (auth, guest, etc.)
+  // ---------------------------------------------------------------------
+
+  Future<Response> get(
+      String path, {
+        Map<String, dynamic>? queryParameters,
+      }) {
+    return dio.get(path, queryParameters: queryParameters);
+  }
+
+  Future<Response> post(
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+      }) {
+    return dio.post(path, data: data, queryParameters: queryParameters);
+  }
+
+  Future<Response> put(
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+      }) {
+    return dio.put(path, data: data, queryParameters: queryParameters);
+  }
+
+  Future<Response> delete(
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+      }) {
+    return dio.delete(path, data: data, queryParameters: queryParameters);
+  }
 }

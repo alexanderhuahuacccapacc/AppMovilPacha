@@ -14,7 +14,7 @@ class PrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.loading = false,
-    this.icon,
+    this.icon, required bool fullWidth,
   });
 
   @override

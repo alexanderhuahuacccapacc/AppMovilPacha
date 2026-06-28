@@ -27,6 +27,7 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get user => _user;
   UserRole get role => _user?.role ?? UserRole.unknown;
   bool get isAdmin => role.isAdmin;
+  bool get isGuest => role.isGuest;
   bool get loading => _loading;
   String? get error => _error;
 
@@ -74,7 +75,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _repo.logout();          // invalida cookie en el servidor
+    await _repo.logout(); // invalida cookie en el servidor
     await _apiClient.clearCookies(); // limpia cookie local
     _user = null;
     _error = null;

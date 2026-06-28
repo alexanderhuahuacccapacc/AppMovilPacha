@@ -53,7 +53,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
             return EmptyState(
               icon: Icons.cloud_off,
               title: 'No se pudo cargar',
-              message: '${snapshot.error ?? 'Habitación no encontrada'}',
+              message: '${snapshot.error ?? 'Habitación no encontrada'}', actionLabel: '',
             );
           }
           return _content(snapshot.data!);

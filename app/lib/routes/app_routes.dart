@@ -5,6 +5,7 @@ class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String shell = '/shell';
+  static const String guestHome = '/guest-home';
   static const String roomDetail = '/room-detail';
   static const String assignedRoom = '/assigned-room';
   static const String unauthorized = '/unauthorized';

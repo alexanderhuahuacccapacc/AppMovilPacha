@@ -39,7 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     if (!mounted) return;
     if (ok) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.shell);
+      // Redirigir según rol después del login exitoso
+      final destination = auth.isGuest ? AppRoutes.guestHome : AppRoutes.shell;
+      Navigator.of(context).pushReplacementNamed(destination);
     }
   }
 
@@ -101,6 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Icons.login,
                   loading: auth.loading,
                   onPressed: _submit,
+                  fullWidth: true,
                 ),
               ],
             ),
