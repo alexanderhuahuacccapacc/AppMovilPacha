@@ -6,6 +6,7 @@ import '../../models/room_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/room_provider.dart';
 import '../../widgets/kpi_card.dart';
+import '../../widgets/recent_activity_widget.dart';
 import '../../widgets/shimmer_box.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -19,9 +20,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-          (_) => context.read<RoomProvider>().loadRooms(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<RoomProvider>();
+      provider.loadRooms();
+      provider.loadActividad();
+    });
   }
 
   @override
@@ -33,7 +36,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () => context.read<RoomProvider>().loadRooms(force: true),
+      onRefresh: () async {
+        final provider = context.read<RoomProvider>();
+        await Future.wait([
+          provider.loadRooms(force: true),
+          provider.loadActividad(force: true),
+        ]);
+      },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -49,15 +58,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text('Actividad reciente',
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
-          _recentActivity(),
+          const RecentActivityWidget(),
         ],
       ),
     );
   }
 
-  /// The backend's login response only carries {email, rol} — no display
-  /// name — so the greeting falls back to the email instead of a first
-  /// name.
   Widget _greeting(BuildContext context, AuthProvider auth) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,36 +178,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _recentActivity() {
-    // Placeholder timeline — wired to real events in later sprints.
-    final items = [
-      ('Check-in registrado', 'Suite Titicaca · hace 1 h', Icons.login),
-      ('Habitación en mantenimiento', 'Suite Uros · hace 3 h', Icons.build),
-      ('Nueva reserva web', 'Suite Inca · hoy', Icons.event_available),
-    ];
-    return Card(
-      child: Column(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppColors.creamSoft,
-                child: Icon(items[i].$3, color: AppColors.chocolate, size: 20),
-              ),
-              title: Text(items[i].$1,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: Text(items[i].$2,
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12)),
-            ),
-            if (i < items.length - 1) const Divider(height: 1),
-          ],
-        ],
       ),
     );
   }
