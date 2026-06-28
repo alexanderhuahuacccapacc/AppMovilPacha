@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_routes.dart';
+import '../cochera/cochera_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../profile/profile_screen.dart';
 import '../rooms/rooms_screen.dart';
@@ -20,10 +21,11 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  static const _titles = ['Dashboard', 'Habitaciones', 'Perfil'];
+  static const _titles = ['Dashboard', 'Habitaciones', 'Cochera', 'Perfil'];
   static const _pages = [
     DashboardScreen(),
     RoomsScreen(),
+    CocheraScreen(),
     ProfileScreen(),
   ];
 
@@ -64,6 +66,11 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.king_bed_outlined),
             selectedIcon: Icon(Icons.king_bed),
             label: 'Habitaciones',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.local_parking_outlined),
+            selectedIcon: Icon(Icons.local_parking),
+            label: 'Cochera',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
@@ -134,7 +141,8 @@ class _AppDrawer extends StatelessWidget {
             const SizedBox(height: 8),
             _item(context, Icons.dashboard_outlined, 'Dashboard', 0),
             _item(context, Icons.king_bed_outlined, 'Habitaciones', 1),
-            _item(context, Icons.person_outline, 'Perfil', 2),
+            _item(context, Icons.local_parking_outlined, 'Cochera', 2),
+            _item(context, Icons.person_outline, 'Perfil', 3),
             if (auth.isAdmin) const _AdminOnlyHint(),
             const Spacer(),
             const Divider(color: Colors.white12, height: 1),
