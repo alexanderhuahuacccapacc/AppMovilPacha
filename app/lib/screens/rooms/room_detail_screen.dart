@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/amenities_catalog.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/room_model.dart';
 import '../../providers/auth_provider.dart';
@@ -53,7 +54,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
             return EmptyState(
               icon: Icons.cloud_off,
               title: 'No se pudo cargar',
-              message: '${snapshot.error ?? 'Habitación no encontrada'}', actionLabel: '',
+              message: '${snapshot.error ?? 'Habitación no encontrada'}',
             );
           }
           return _content(snapshot.data!);
@@ -94,7 +95,12 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
               Text('Amenidades',
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
-              _amenidadesGrid(room),
+              // Admin: switches SI/NO que persisten contra el backend.
+              // Huésped/recepción: vista de solo lectura.
+              if (isAdmin)
+                _AmenitiesEditor(room: room)
+              else
+                _amenidadesGrid(room),
               const SizedBox(height: 24),
               _actions(isAdmin),
             ],
@@ -296,6 +302,95 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
       SnackBar(
         content: Text('"$action" se habilita en próximos sprints.'),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+/// Editor de amenidades con switches SI/NO (solo admin).
+///
+/// Cada cambio se persiste con `PUT /admin/habitaciones/{id}/amenidades`
+/// vía [RoomProvider.setAmenidades]. Si el backend falla, revierte el
+/// switch y muestra el error.
+class _AmenitiesEditor extends StatefulWidget {
+  final RoomModel room;
+
+  const _AmenitiesEditor({required this.room});
+
+  @override
+  State<_AmenitiesEditor> createState() => _AmenitiesEditorState();
+}
+
+class _AmenitiesEditorState extends State<_AmenitiesEditor> {
+  late final Map<String, bool> _values = {
+    for (final a in AmenitiesCatalog.all)
+      a.key: widget.room.amenidad(a.key),
+  };
+  String? _saving; // key actualmente guardándose
+
+  Future<void> _toggle(String key, bool value) async {
+    final previous = _values[key] ?? false;
+    setState(() {
+      _values[key] = value;
+      _saving = key;
+    });
+    try {
+      await context
+          .read<RoomProvider>()
+          .setAmenidades(widget.room.id, Map<String, bool>.from(_values));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _values[key] = previous); // revierte
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo actualizar: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < AmenitiesCatalog.all.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.border),
+            SwitchListTile(
+              value: _values[AmenitiesCatalog.all[i].key] ?? false,
+              activeColor: AppColors.primary,
+              onChanged: _saving != null
+                  ? null
+                  : (v) => _toggle(AmenitiesCatalog.all[i].key, v),
+              secondary: Icon(AmenitiesCatalog.all[i].icon,
+                  color: AppColors.chocolate),
+              title: Text(
+                AmenitiesCatalog.all[i].nombre,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              subtitle: Text(
+                (_values[AmenitiesCatalog.all[i].key] ?? false) ? 'SI' : 'NO',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: (_values[AmenitiesCatalog.all[i].key] ?? false)
+                      ? AppColors.success
+                      : AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

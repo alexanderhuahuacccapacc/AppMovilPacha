@@ -3,114 +3,113 @@ import 'package:provider/provider.dart';
 
 import 'config/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'providers/guest_provider.dart';
 import 'providers/cochera_provider.dart';
+import 'providers/contact_provider.dart';
 import 'providers/reservation_provider.dart';
 import 'providers/room_provider.dart';
 import 'repositories/auth_repository.dart';
-import 'repositories/guest_repository.dart';
 import 'repositories/cochera_repository.dart';
+import 'repositories/contact_repository.dart';
 import 'repositories/reservation_repository.dart';
 import 'repositories/room_repository.dart';
 import 'routes/app_routes.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/splash/splash_screen.dart';
-import 'screens/shell/main_shell.dart';
-import 'screens/guests/GuestHomeScreen.dart';
-import 'screens/rooms/room_detail_screen.dart';
+import 'screens/contact/contact_screen.dart';
 import 'screens/rooms/assigned_room_screen.dart';
+import 'screens/rooms/room_create_screen.dart';
+import 'screens/rooms/room_detail_screen.dart';
+import 'screens/services/services_screen.dart';
+import 'screens/shell/main_shell.dart';
+import 'screens/splash/splash_screen.dart';
 import 'screens/unauthorized/unauthorized_screen.dart';
 import 'services/api_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Un solo ApiClient para toda la app: maneja la cookie HttpOnly (jwt=)
-  // y centraliza el manejo de 401 (sesión expirada).
+  // ── Dependency wiring ──
   final apiClient = ApiClient();
-  await apiClient.init();
+  await apiClient.init(); // inicializa el CookieJar (necesita path_provider)
 
-  // Todos los repositorios reciben el mismo ApiClient, así la cookie de
-  // sesión viaja en TODAS las llamadas, no solo en auth/guest.
-  final authRepo = AuthRepository(apiClient);
-  final guestRepo = GuestRepository(apiClient);
-  final cocheraRepo = CocheraRepository(apiClient);
-  final reservationRepo = ReservationRepository(apiClient);
-  final roomRepo = RoomRepository(apiClient);
+  final authRepository = AuthRepository(apiClient);
+  final roomRepository = RoomRepository(apiClient);
+  final cocheraRepository = CocheraRepository(apiClient);
+  final reservationRepository = ReservationRepository(apiClient);
+  final contactRepository = ContactRepository(apiClient);
 
-  final authProvider = AuthProvider(authRepo, apiClient);
-
-  // Si el backend responde 401 en cualquier request, AuthProvider limpia
-  // la sesión y la UI puede reaccionar (redirigir a login).
+  final authProvider = AuthProvider(authRepository, apiClient);
   apiClient.onSessionExpired = authProvider.onSessionExpired;
 
-  await authProvider.tryAutoLogin();
-
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<ApiClient>.value(value: apiClient),
-        Provider<AuthRepository>.value(value: authRepo),
-        Provider<GuestRepository>.value(value: guestRepo),
-        Provider<CocheraRepository>.value(value: cocheraRepo),
-        Provider<ReservationRepository>.value(value: reservationRepo),
-        Provider<RoomRepository>.value(value: roomRepo),
-        ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
-        ChangeNotifierProvider(
-          create: (context) => GuestProvider(guestRepo),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => CocheraProvider(cocheraRepo),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => ReservationProvider(reservationRepo),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => RoomProvider(roomRepo),
-        ),
-      ],
-      child: const MyApp(),
+    PachaSuiteApp(
+      authProvider: authProvider,
+      roomRepository: roomRepository,
+      cocheraRepository: cocheraRepository,
+      reservationRepository: reservationRepository,
+      contactRepository: contactRepository,
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PachaSuiteApp extends StatelessWidget {
+  final AuthProvider authProvider;
+  final RoomRepository roomRepository;
+  final CocheraRepository cocheraRepository;
+  final ReservationRepository reservationRepository;
+  final ContactRepository contactRepository;
+
+  const PachaSuiteApp({
+    super.key,
+    required this.authProvider,
+    required this.roomRepository,
+    required this.cocheraRepository,
+    required this.reservationRepository,
+    required this.contactRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pacha Suite',
-      theme: AppTheme.light,
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.splash,
-      routes: {
-        AppRoutes.splash: (_) => const SplashScreen(),
-        AppRoutes.login: (_) => const LoginScreen(),
-        AppRoutes.shell: (_) => const MainShell(),
-        AppRoutes.guestHome: (_) => const GuestHomeScreen(),
-        AppRoutes.unauthorized: (_) => const UnauthorizedScreen(),
-      },
-      // roomDetail y assignedRoom necesitan un roomId dinámico, que no se
-      // puede pasar en el mapa `routes` estático de arriba — por eso se
-      // resuelven aquí, leyendo el argumento que mande Navigator.pushNamed.
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case AppRoutes.roomDetail:
-            final roomId = settings.arguments as int;
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider(create: (_) => RoomProvider(roomRepository)),
+        ChangeNotifierProvider(
+            create: (_) => CocheraProvider(cocheraRepository)),
+        ChangeNotifierProvider(
+            create: (_) => ReservationProvider(reservationRepository)),
+        ChangeNotifierProvider(
+            create: (_) => ContactProvider(contactRepository)),
+      ],
+      child: MaterialApp(
+        title: 'Pacha Suite',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        initialRoute: AppRoutes.splash,
+        routes: {
+          AppRoutes.splash: (_) => const SplashScreen(),
+          AppRoutes.login: (_) => const LoginScreen(),
+          AppRoutes.shell: (_) => const MainShell(),
+          AppRoutes.unauthorized: (_) => const UnauthorizedScreen(),
+          AppRoutes.services: (_) => const ServicesScreen(),
+          AppRoutes.contact: (_) => const ContactScreen(),
+          AppRoutes.roomCreate: (_) => const RoomCreateScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == AppRoutes.roomDetail) {
+            final id = settings.arguments as int;
             return MaterialPageRoute(
-              builder: (_) => RoomDetailScreen(roomId: roomId),
-              settings: settings,
+              builder: (_) => RoomDetailScreen(roomId: id),
             );
-          case AppRoutes.assignedRoom:
-            final roomId = settings.arguments as int;
+          }
+          if (settings.name == AppRoutes.assignedRoom) {
+            final id = settings.arguments as int;
             return MaterialPageRoute(
-              builder: (_) => AssignedRoomScreen(roomId: roomId),
-              settings: settings,
+              builder: (_) => AssignedRoomScreen(roomId: id),
             );
-        }
-        return null;
-      },
+          }
+          return null;
+        },
+      ),
     );
   }
 }

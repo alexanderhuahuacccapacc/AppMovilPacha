@@ -62,7 +62,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
           return const EmptyState(
             icon: Icons.king_bed_outlined,
             title: 'Sin habitaciones',
-            message: 'No hay habitaciones que coincidan con el filtro.', actionLabel: '',
+            message: 'No hay habitaciones que coincidan con el filtro.',
           );
         }
 
